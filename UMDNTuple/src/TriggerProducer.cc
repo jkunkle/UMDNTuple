@@ -10,7 +10,8 @@ TriggerProducer::TriggerProducer(  )  :
     HLTObj_eta(0),
     HLTObj_phi(0),
     HLTObj_e(0),
-    HLTObj_passTriggers(0)
+    HLTObj_passTriggers(0),
+    _prevRunNumber(0)
 {
 
 }
@@ -79,7 +80,11 @@ void TriggerProducer::produce(const edm::Event &iEvent ) {
 
     const edm::TriggerNames trigNames( iEvent.triggerNames( *triggers ) );
 
-    if( _trigger_idx_map.size() == 0 ) {
+    int runNumber     = iEvent.id().run();
+
+    if( _trigger_idx_map.size() == 0 || ( runNumber != _prevRunNumber ) ) {
+
+        _trigger_idx_map.clear();
 
         for (unsigned i = 0; i < trigNames.size(); i++) {
 
@@ -139,6 +144,8 @@ void TriggerProducer::produce(const edm::Event &iEvent ) {
         }
 
     }
+
+    _prevRunNumber = runNumber;
         //std::vector<std::string> pathNamesAll = obj.pathNames(false);
 
 

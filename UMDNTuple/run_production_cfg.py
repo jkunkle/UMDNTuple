@@ -3,6 +3,7 @@ import FWCore.ParameterSet.Config as cms
 import FWCore.ParameterSet.VarParsing as VarParsing
 import re
 
+
 process = cms.Process("UMDNTuple")
 
 # setup 'analysis'  options
@@ -10,29 +11,39 @@ opt = VarParsing.VarParsing ('analysis')
 
 opt.register('isMC', -1, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.int, 'Flag indicating if the input samples are from MC (1) or from the detector (0).')
 opt.register('nEvents', 1000, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.int, 'Number of events to analyze')
+opt.register('disableEventWeights', 0, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.bool, 'Set to 1 to disable event weights')
 
 #input files. Can be changed on the command line with the option inputFiles=...
 opt.inputFiles = [
     #'file:/data/users/jkunkle/Samples/aQGC_WWW_SingleLepton_LO/Job_0000/MakeMINIAOD/aQGC_WWW_SingleLepton_LO_MINIAOD.root',
     #'file:/data/users/jkunkle/Samples/WGamma/02FE572F-88DA-E611-8CAB-001E67792884.root',
-    'file:/data/users/jkunkle/Samples/WJetsToLNu_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAOD/08F5FD50-23BC-E611-A4C2-00259073E3DA.root',
-    #'root://cms-xrd-global.cern.ch//store/data/Run2016G/SingleElectron/MINIAOD/23Sep2016-v1/100000/004A7893-A990-E611-B29F-002590E7DE36.root'
+    #'file:/data/users/jkunkle/Samples/WJetsToLNu_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAOD/08F5FD50-23BC-E611-A4C2-00259073E3DA.root',
+    #'root://cms-xrd-global.cern.ch//store/data/Run2016G/SingleElectron/MINIAOD/23Sep2016-v1/100000/004A7893-A990-E611-B29F-002590E7DE36.root',
     #'root://cms-xrd-global.cern.ch//store/data/Run2016G/SingleElectron/MINIAOD/03Feb2017-v1/50000/004A75AB-B2EA-E611-B000-24BE05CEFDF1.root',
+    #'root://eoscms.cern.ch//eos/cms/store/data/Run2016B/SingleElectron/MINIAOD/23Sep2016-v3/120000/AE79D618-6A9B-E611-A755-0025905A60D2.root',
+    #'root://eoscms.cern.ch//eos/cms/store/data/Run2016B/SingleElectron/MINIAOD/23Sep2016-v3/120000/0CC4926A-729B-E611-8253-0CC47A4D7694.root',
+    #'/store/mc/RunIISummer16MiniAODv2/WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/60000/9805C328-8EBE-E611-B738-0025905A6070.root'
+    #'/store/mc/RunIISummer16MiniAODv2/WGToLNuG_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext1-v1/120000/001D822E-9CBC-E611-BDAA-0025904C7DFA.root'
+    #'/store/mc/RunIISummer16MiniAODv2/PythiaChargedResonance_WGToLNu_M700_width0p01/MINIAODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/120000/02A1A75E-C340-E711-B5A8-0242AC130004.root'
+    '/store/mc/RunIISummer16MiniAODv2/PythiaChargedResonance_WGToLNu_M2200_width0p01/MINIAODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v2/10000/243FADF7-9A4B-E711-9F2F-FA163E295F42.root'
+
 ]
 
 
 #default number of exvents
 opt.nEvents = 1000
+opt.disableEventWeights = 0
 
 opt.parseArguments()
 
+print 'Got disable ', opt.disableEventWeights
 
 
 #-----------------------------------------------------
 # Configure message logger
 #-----------------------------------------------------
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
-process.MessageLogger.cerr.FwkReport.reportEvery = 100
+process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 #process.MessageLogger.suppressWarning = cms.untracked.vstring('ecalLaserCorrFilter','manystripclus53X','toomanystripclus53X')
 process.options = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
 #process.options.allowUnscheduled = cms.untracked.bool(True)
@@ -310,7 +321,7 @@ trigger_map = cms.untracked.vstring(
     ) 
 
 
-process.UMDNTuple = cms.EDAnalyzer("UMDNTuple",
+config_args = cms.PSet( 
     electronTag = cms.untracked.InputTag('slimmedElectrons'),
     electronCalibTag = cms.untracked.InputTag('calibratedPatElectrons'),
         elecIdVeryLooseTag = cms.untracked.InputTag("egmGsfElectronIDs:cutBasedElectronID-Summer16-80X-V1-veto"),
@@ -341,7 +352,6 @@ process.UMDNTuple = cms.EDAnalyzer("UMDNTuple",
     verticesTag  = cms.untracked.InputTag('offlineSlimmedPrimaryVertices'),
     rhoTag  = cms.untracked.InputTag('fixedGridRhoFastjetAll'),
     puTag   = cms.untracked.InputTag('slimmedAddPileupInfo'),
-    lheEventTag  = cms.untracked.InputTag('externalLHEProducer'),
     lheRunTag  = cms.untracked.InputTag('externalLHEProducer'),
     generatorTag = cms.untracked.InputTag('generator'),
     genParticleTag = cms.untracked.InputTag('prunedGenParticles'),
@@ -351,6 +361,8 @@ process.UMDNTuple = cms.EDAnalyzer("UMDNTuple",
     muonDetailLevel = cms.untracked.int32( 1 ),
     jetDetailLevel = cms.untracked.int32( 1 ),
     isMC = cms.untracked.int32( opt.isMC ),
+
+    disableEventWeights = cms.untracked.bool( opt.disableEventWeights ),
 
     prefix_el   = cms.untracked.string("el"),
     prefix_mu   = cms.untracked.string("mu"),
@@ -367,9 +379,75 @@ process.UMDNTuple = cms.EDAnalyzer("UMDNTuple",
     jetMinPt = cms.untracked.double( 30 ),
     fjetMinPt = cms.untracked.double( 200 ),
     genMinPt = cms.untracked.double( 5 ),
+    )
 
+if not opt.disableEventWeights :
+    config_args.lheEventTag  = cms.untracked.InputTag('externalLHEProducer')
 
-)
+process.UMDNTuple = cms.EDAnalyzer( "UMDNTuple", config_args )
+
+#process.UMDNTuple = cms.EDAnalyzer("UMDNTuple",
+#    electronTag = cms.untracked.InputTag('slimmedElectrons'),
+#    electronCalibTag = cms.untracked.InputTag('calibratedPatElectrons'),
+#        elecIdVeryLooseTag = cms.untracked.InputTag("egmGsfElectronIDs:cutBasedElectronID-Summer16-80X-V1-veto"),
+#        elecIdLooseTag     = cms.untracked.InputTag("egmGsfElectronIDs:cutBasedElectronID-Summer16-80X-V1-loose"),
+#        elecIdMediumTag    = cms.untracked.InputTag("egmGsfElectronIDs:cutBasedElectronID-Summer16-80X-V1-medium"),
+#        elecIdTightTag     = cms.untracked.InputTag("egmGsfElectronIDs:cutBasedElectronID-Summer16-80X-V1-tight"),
+#        elecIdHLTTag       = cms.untracked.InputTag("egmGsfElectronIDs:cutBasedElectronHLTPreselection-Summer16-V1"),
+#        elecIdHEEPTag      = cms.untracked.InputTag("egmGsfElectronIDs:heepElectronID-HEEPV70"),
+#    muonTag     = cms.untracked.InputTag('slimmedMuons'),
+#    photonTag   = cms.untracked.InputTag('slimmedPhotons'),
+#    photonCalibTag   = cms.untracked.InputTag('calibratedPatPhotons'),
+#        phoChIsoTag    = cms.untracked.InputTag("photonIDValueMapProducer:phoChargedIsolation"),
+#        phoNeuIsoTag   = cms.untracked.InputTag("photonIDValueMapProducer:phoNeutralHadronIsolation"),
+#        phoPhoIsoTag   = cms.untracked.InputTag("photonIDValueMapProducer:phoPhotonIsolation"),
+#        phoIdLooseTag  = cms.untracked.InputTag("egmPhotonIDs:cutBasedPhotonID-Spring16-V2p2-loose"),
+#        phoIdMediumTag = cms.untracked.InputTag("egmPhotonIDs:cutBasedPhotonID-Spring16-V2p2-medium"),
+#        phoIdTightTag  = cms.untracked.InputTag("egmPhotonIDs:cutBasedPhotonID-Spring16-V2p2-tight"),
+#    jetTag     = cms.untracked.InputTag('slimmedJets'),
+#    fatjetTag     = cms.untracked.InputTag('slimmedJetsAK8'),
+#    metTag     = cms.untracked.InputTag('slimmedMETs'),
+#    triggerTag  = cms.untracked.InputTag('TriggerResults', '', 'HLT'),
+#    triggerObjTag = cms.untracked.InputTag('selectedPatTrigger'),
+#    triggerMap = trigger_map,
+#
+#    beamSpotTag = cms.untracked.InputTag('offlineBeamSpot'),
+#    conversionsTag = cms.untracked.InputTag('reducedEgamma', 'reducedConversions' ),
+#    #conversionsTag = cms.untracked.InputTag('allConversions' ),
+#    verticesTag  = cms.untracked.InputTag('offlineSlimmedPrimaryVertices'),
+#    rhoTag  = cms.untracked.InputTag('fixedGridRhoFastjetAll'),
+#    puTag   = cms.untracked.InputTag('slimmedAddPileupInfo'),
+#    #lheEventTag  = cms.untracked.InputTag('externalLHEProducer'),
+#    lheRunTag  = cms.untracked.InputTag('externalLHEProducer'),
+#    generatorTag = cms.untracked.InputTag('generator'),
+#    genParticleTag = cms.untracked.InputTag('prunedGenParticles'),
+#
+#    electronDetailLevel = cms.untracked.int32( 1 ),
+#    photonDetailLevel = cms.untracked.int32( 1 ),
+#    muonDetailLevel = cms.untracked.int32( 1 ),
+#    jetDetailLevel = cms.untracked.int32( 1 ),
+#    isMC = cms.untracked.int32( opt.isMC ),
+#
+#    disableEventWeights = cms.untracked.bool( opt.disableEventWeights ),
+#
+#    prefix_el   = cms.untracked.string("el"),
+#    prefix_mu   = cms.untracked.string("mu"),
+#    prefix_ph   = cms.untracked.string("ph"),
+#    prefix_jet  = cms.untracked.string("jet"),
+#    prefix_fjet = cms.untracked.string("fjet"),
+#    prefix_trig = cms.untracked.string("passTrig"),
+#    prefix_gen  = cms.untracked.string("gen"),
+#    prefix_met  = cms.untracked.string("met"),
+#                                   
+#    electronMinPt = cms.untracked.double( 10 ),
+#    muonMinPt = cms.untracked.double( 10 ),
+#    photonMinPt = cms.untracked.double( 20 ),
+#    jetMinPt = cms.untracked.double( 30 ),
+#    fjetMinPt = cms.untracked.double( 200 ),
+#    genMinPt = cms.untracked.double( 5 ),
+#
+#
+#)
     
 
 process.p = cms.Path()

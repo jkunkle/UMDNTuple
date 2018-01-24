@@ -28,6 +28,11 @@ UMDNTuple::UMDNTuple( const edm::ParameterSet & iConfig ) :
 
     _isMC = iConfig.getUntrackedParameter<int>("isMC");
 
+    bool disableEventWeights = false;
+    if( iConfig.exists("disableEventWeights" ) ) {
+        disableEventWeights = iConfig.getUntrackedParameter<bool>("disableEventWeights");
+    }
+
     // Create tree to store event data
     _myTree = fs->make<TTree>( "EventTree", "EventTree" );
     // Create tree to store metadata
@@ -190,6 +195,9 @@ UMDNTuple::UMDNTuple( const edm::ParameterSet & iConfig ) :
                                generatorToken, lheEventToken, lheRunToken,
                                rhoToken, _myTree, _trigInfoTree, _isMC );
 
+    if(disableEventWeights ) {
+        _eventProducer.disableEventWeights();
+    }
     // Electrons
     if( _produceElecs ) {
         elecToken =  consumes<edm::View<pat::Electron> >(
@@ -275,7 +283,6 @@ UMDNTuple::UMDNTuple( const edm::ParameterSet & iConfig ) :
         _photProducer.addUserBool( PhotonVIDMedium     , phoIdMediumToken );
         _photProducer.addUserBool( PhotonVIDTight      , phoIdTightToken );
 
-        _photProducer.addElectronsToken( elecToken );
         _photProducer.addConversionsToken( conversionsToken );
         _photProducer.addBeamSpotToken( beamSpotToken );
         _photProducer.addCalibratedToken( photCalibToken );
@@ -323,12 +330,6 @@ UMDNTuple::UMDNTuple( const edm::ParameterSet & iConfig ) :
         _genProducer.initialize( prefix_gen       , genToken, _myTree, genMinPt );
     }
 
-    //edm::Handle< edm::TriggerResults> HLTtriggers;
-    //edm::EDGetTokenT<edm::TriggerResults> HLTTagToken_;
-
-    //iEvent.getByToken(HLTTagToken_, HLTtriggers);          
-    //iEvent.getByToken(triggerObjsToken_, triggerObjects);
-
 }
 
 void UMDNTuple::beginJob() {
@@ -347,14 +348,10 @@ void UMDNTuple::analyze(const edm::Event &iEvent, const edm::EventSetup &iSetup)
     if( _produceMET   ) _metProducer .produce( iEvent );
     if( _produceTrig  ) _trigProducer.produce( iEvent );
     if( _produceGen && _isMC  ) _genProducer .produce( iEvent );
-
     _myTree->Fill();
-
 }
 
 void UMDNTuple::endJob() {
-
-    //_myTree->Write();
 
 }
 
