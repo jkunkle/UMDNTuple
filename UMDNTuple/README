@@ -8,11 +8,13 @@ Setup for 2016 data analysis
 
 mkdir UMDNTuple
 
-#Setup CMSSW_8_0_27 (minimum of CMSSW_8_0_26_patch1 is required, MET Filters do not merge with CMSSW_8_0_27  )
+#Setup CMSSW_8_0_26_patch1 (minimum of CMSSW_8_0_26_patch1 is required, MET Filters do not merge with CMSSW_8_0_27  )
 
 cmsrel CMSSW_8_0_26_patch1
 
 cd CMSSW_8_0_26_patch1/src
+
+cmsenv
 
 #Include VID and HEEP (https://twiki.cern.ch/twiki/bin/viewauth/CMS/CutBasedElectronIdentificationRun2,https://twiki.cern.ch/twiki/bin/view/CMS/HEEPElectronIdentificationRun2)
 
