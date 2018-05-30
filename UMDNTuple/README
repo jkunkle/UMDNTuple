@@ -1,24 +1,25 @@
 -----------------------------------
 Setup for 2016 data analysis
--------------------------
+----------------------------------
 
-Make a working directory,
+#----------------------- YOU CAN SIMPLY COPY-PASTE THIS RECIPE  ------------------------
 
-mkdir UMDNtuple
+#Make a working directory,
 
-S#etup CMSSW_8_0_27 (minimum of CMSSW_8_0_26_patch1 is required )
+mkdir UMDNTuple
 
-cmsrel CMSSW_8_0_27
+#Setup CMSSW_8_0_27 (minimum of CMSSW_8_0_26_patch1 is required, MET Filters do not merge with CMSSW_8_0_27  )
 
-cd CMSSW_8_0_27/src
+cmsrel CMSSW_8_0_26_patch1
 
+cd CMSSW_8_0_26_patch1/src
 
 #Include VID and HEEP (https://twiki.cern.ch/twiki/bin/viewauth/CMS/CutBasedElectronIdentificationRun2,https://twiki.cern.ch/twiki/bin/view/CMS/HEEPElectronIdentificationRun2)
 
 git cms-merge-topic Sam-Harper:HEEPV70VID_8010_ReducedCheckout
 git cms-merge-topic ikrav:egm_id_80X_v3
 mkdir -p ../external/slc6_amd64_gcc530/data/RecoEgamma/ElectronIdentification/
-git clone git@github.com:cms-data/RecoEgamma-ElectronIdentification ../external/slc6_amd64_gcc530/data/RecoEgamma/ElectronIdentification/data
+git clone https://github.com/cms-data/RecoEgamma-ElectronIdentification ../external/slc6_amd64_gcc530/data/RecoEgamma/ElectronIdentification/data
 
 #Include Photon VID 
 
@@ -34,8 +35,9 @@ git clone https://github.com/ECALELFS/ScalesSmearings.git
 cd ScalesSmearings
 git checkout Moriond17_23Jan_v2
 
+cd $CMSSW_BASE/src
+
 # get the ntuplizer
-git clone https://github.com/albertobelloni/WG_Analysis
-mkdir UMDNTuple
-mv WG_Analysis/UMDNTuple UMDNTuple
-rm -rf WG_Analysis
+git clone https://github.com/jkunkle/UMDNTuple
+
+scram b -j4
