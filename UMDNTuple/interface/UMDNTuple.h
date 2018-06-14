@@ -20,6 +20,7 @@
 #include "UMDNTuple/UMDNTuple/interface/JetProducer.h"
 #include "UMDNTuple/UMDNTuple/interface/FatJetProducer.h"
 #include "UMDNTuple/UMDNTuple/interface/METProducer.h"
+#include "UMDNTuple/UMDNTuple/interface/METFilterProducer.h"
 #include "UMDNTuple/UMDNTuple/interface/TriggerProducer.h"
 
 
@@ -57,6 +58,7 @@ private :
   JetProducer      _jetProducer;
   FatJetProducer   _fjetProducer;
   METProducer      _metProducer;
+  METFilterProducer  _metFilterProducer;
   TriggerProducer  _trigProducer;
   
   bool _produceEvent;
@@ -66,6 +68,7 @@ private :
   bool _produceJets;
   bool _produceFJets;
   bool _produceMET;
+  bool _produceMETFilter;
   bool _produceTrig;
   bool _produceGen;
 

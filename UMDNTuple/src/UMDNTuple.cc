@@ -82,14 +82,15 @@ UMDNTuple::UMDNTuple( const edm::ParameterSet & iConfig ) :
 
     // prefix for object branches
     // defaults
-    std::string prefix_el   = "el";
-    std::string prefix_mu   = "mu";
-    std::string prefix_ph   = "ph";
-    std::string prefix_jet  = "jet";
-    std::string prefix_fjet = "fjet";
-    std::string prefix_trig = "passTrig";
-    std::string prefix_gen  = "gen";
-    std::string prefix_met  = "met";
+    std::string prefix_el          = "el";
+    std::string prefix_mu          = "mu";
+    std::string prefix_ph          = "ph";
+    std::string prefix_jet         = "jet";
+    std::string prefix_fjet        = "fjet";
+    std::string prefix_trig        = "passTrig";
+    std::string prefix_gen         = "gen";
+    std::string prefix_met         = "met";
+    std::string prefix_met_filter  = "metFilter";
 
     if( iConfig.exists(prefix_el) ) {
         prefix_el = iConfig.getUntrackedParameter<std::string>("prefix_el");
@@ -114,6 +115,9 @@ UMDNTuple::UMDNTuple( const edm::ParameterSet & iConfig ) :
     }
     if( iConfig.exists(prefix_met) ) {
         prefix_met = iConfig.getUntrackedParameter<std::string>("prefix_met");
+    }
+    if( iConfig.exists(prefix_met_filter) ) {
+        prefix_met_filter = iConfig.getUntrackedParameter<std::string>("prefix_met_filter");
     }
 
 
@@ -161,14 +165,15 @@ UMDNTuple::UMDNTuple( const edm::ParameterSet & iConfig ) :
 
     // flags to enable or disable production
     // of objects based on the provided tags
-    _produceJets  = iConfig.exists( "jetTag" );
-    _produceFJets = iConfig.exists( "fatjetTag" );
-    _produceElecs = iConfig.exists( "electronTag" );
-    _produceMuons = iConfig.exists( "muonTag" );
-    _producePhots = iConfig.exists( "photonTag" );
-    _produceMET   = iConfig.exists( "metTag" );
-    _produceTrig  = iConfig.exists( "triggerTag" );
-    _produceGen   = iConfig.exists( "genParticleTag" );
+    _produceJets      = iConfig.exists( "jetTag" );
+    _produceFJets     = iConfig.exists( "fatjetTag" );
+    _produceElecs     = iConfig.exists( "electronTag" );
+    _produceMuons     = iConfig.exists( "muonTag" );
+    _producePhots     = iConfig.exists( "photonTag" );
+    _produceMET       = iConfig.exists( "metTag" );
+    _produceMETFilter = iConfig.exists( "metFilterTag" );
+    _produceTrig      = iConfig.exists( "triggerTag" );
+    _produceGen       = iConfig.exists( "genParticleTag" );
 
     if( !_isMC ) _produceGen = false;
 
@@ -181,6 +186,7 @@ UMDNTuple::UMDNTuple( const edm::ParameterSet & iConfig ) :
     edm::EDGetTokenT<edm::View<pat::Photon> >         photToken;
     edm::EDGetTokenT<edm::View<pat::Photon> >         photCalibToken;
     edm::EDGetTokenT<edm::View<pat::MET> >            metToken;
+    edm::EDGetTokenT<edm::TriggerResults>             metFilterToken;
     edm::EDGetTokenT<edm::TriggerResults>             trigToken;
     edm::EDGetTokenT<std::vector<reco::GenParticle> > genToken;
 
@@ -301,6 +307,12 @@ UMDNTuple::UMDNTuple( const edm::ParameterSet & iConfig ) :
 
         _metProducer .initialize( prefix_met      , metToken , _myTree );
     }
+    if( _produceMETFilter ) {
+        metFilterToken = consumes<edm::TriggerResults>(
+                    iConfig.getUntrackedParameter<edm::InputTag>("metFilterTag"));
+
+        _metFilterProducer .initialize( prefix_met_filter      , metFilterToken , _myTree );
+    }
     if( _produceTrig ) {
         trigToken = consumes<edm::TriggerResults>(
                     iConfig.getUntrackedParameter<edm::InputTag>("triggerTag"));
@@ -339,14 +351,15 @@ void UMDNTuple::beginJob() {
 void UMDNTuple::analyze(const edm::Event &iEvent, const edm::EventSetup &iSetup) {
 
     _eventProducer.produce( iEvent );
-    if( _produceElecs ) _elecProducer.produce( iEvent );
-    if( _produceMuons ) _muonProducer.produce( iEvent );
-    if( _producePhots ) _photProducer.produce( iEvent );
-    if( _produceJets  ) _jetProducer .produce( iEvent );
-    if( _produceFJets ) _fjetProducer.produce( iEvent );
-    if( _produceMET   ) _metProducer .produce( iEvent );
-    if( _produceTrig  ) _trigProducer.produce( iEvent );
-    if( _produceGen && _isMC  ) _genProducer .produce( iEvent );
+    if( _produceElecs )         _elecProducer      .produce( iEvent );
+    if( _produceMuons )         _muonProducer      .produce( iEvent );
+    if( _producePhots )         _photProducer      .produce( iEvent );
+    if( _produceJets  )         _jetProducer       .produce( iEvent );
+    if( _produceFJets )         _fjetProducer      .produce( iEvent );
+    if( _produceMET   )         _metProducer       .produce( iEvent );
+    if( _produceMETFilter  )    _metFilterProducer .produce( iEvent );
+    if( _produceTrig  )         _trigProducer      .produce( iEvent );
+    if( _produceGen && _isMC  ) _genProducer       .produce( iEvent );
 
     _myTree->Fill();
 

@@ -44,6 +44,19 @@ process.load('Configuration.StandardSequences.GeometryDB_cff')
 process.load('Configuration.StandardSequences.MagneticField_38T_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
 
+#-----------------------------------
+# Load additional MET Filters
+# https://twiki.cern.ch/twiki/bin/viewauth/CMS/MissingETOptionalFiltersRun2#How_to_run_the_Bad_Charged_Hadro
+
+process.load('RecoMET.METFilters.BadPFMuonFilter_cfi')
+process.BadPFMuonFilter.muons = cms.InputTag("slimmedMuons")
+process.BadPFMuonFilter.PFCandidates = cms.InputTag("packedPFCandidates")
+
+process.load('RecoMET.METFilters.BadChargedCandidateFilter_cfi')
+process.BadChargedCandidateFilter.muons = cms.InputTag("slimmedMuons")
+process.BadChargedCandidateFilter.PFCandidates = cms.InputTag("packedPFCandidates")
+
+
 #------------------------------------
 #Condition DB tag
 from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
@@ -331,6 +344,7 @@ process.UMDNTuple = cms.EDAnalyzer("UMDNTuple",
     jetTag     = cms.untracked.InputTag('slimmedJets'),
     fatjetTag     = cms.untracked.InputTag('slimmedJetsAK8'),
     metTag     = cms.untracked.InputTag('slimmedMETs'),
+    metFilterTag  = cms.untracked.InputTag('TriggerResults', '', 'PAT'),
     triggerTag  = cms.untracked.InputTag('TriggerResults', '', 'HLT'),
     triggerObjTag = cms.untracked.InputTag('selectedPatTrigger'),
     triggerMap = trigger_map,
@@ -380,6 +394,9 @@ process.p += process.calibratedPatElectrons
 process.p += process.photonIDValueMapProducer
 process.p += process.egmGsfElectronIDSequence
 process.p += process.egmPhotonIDSequence
+# run additional MET filters
+process.p += process.BadPFMuonFilter
+process.p += process.BadChargedCandidateFilter
 
 process.p += process.UMDNTuple
 
